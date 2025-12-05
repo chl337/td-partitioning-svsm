@@ -19,7 +19,7 @@ use crate::address::GuestPhysAddr;
 use crate::mm::address_space::is_kernel_phys_addr_valid;
 use crate::mm::guestmem::gpa_is_shared;
 use crate::mm::memory::is_guest_phys_addr_valid;
-use crate::vtpm::ptp::{tpm_mmio_read, tpm_mmio_write, vtpm_range};
+//use crate::vtpm::ptp::{tpm_mmio_read, tpm_mmio_write, vtpm_range};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum AddrSize {
@@ -269,7 +269,7 @@ impl IoReq {
         let (vlapic_mmio_start, vlapic_mmio_end) = this_vcpu(self.vm_id).get_vlapic().mmio_range();
         let (vioapic_mmio_start, vioapic_mmio_end) =
             this_tdp(self.vm_id).get_vioapic().get_mmio_range();
-        let (vtpm_start, vtpm_end) = vtpm_range();
+        //let (vtpm_start, vtpm_end) = vtpm_range();
         if io_op.is_read() {
             io_op.data = match addr {
                 // MMIO belongs to virtual lapic is emulated by SVSM.
@@ -285,7 +285,7 @@ impl IoReq {
                         .mmio_read(v, size as u32)? as u64
                 }
                 // MMIO belongs to vTPM emulated by SVSM.
-                v if (v >= vtpm_start && v <= vtpm_end) => tpm_mmio_read(v, size.into()),
+                //v if (v >= vtpm_start && v <= vtpm_end) => tpm_mmio_read(v, size.into()),
                 // Other MMIO are emulated by host, so send MMIO tdvmcall
                 // to host to emulate.
                 _ => match size {
@@ -312,9 +312,9 @@ impl IoReq {
                 )
                 .get_vioapic()
                 .mmio_write(v, io_op.data as u32, size as u32)?,
-                v if (v >= vtpm_start && v <= vtpm_end) => {
-                    tpm_mmio_write(v, self.io_op.data, size.into())
-                }
+               // v if (v >= vtpm_start && v <= vtpm_end) => {
+               //     tpm_mmio_write(v, self.io_op.data, size.into())
+               // }
                 // Other MMIO are emulated by host, so send MMIO tdvmcall
                 // to host to emulate.
                 _ => match size {

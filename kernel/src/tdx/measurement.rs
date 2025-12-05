@@ -16,9 +16,9 @@ use crate::tcg2::{
     TPM2_SHA384_SIZE,
 };
 use crate::utils::align_up;
-use crate::vtpm::cmd::tpm2_pcr_extend::pcr_extend;
-use crate::vtpm::cmd::tpm2_startup::startup;
-use crate::vtpm::cmd::TPM_SU_CLEAR;
+//use crate::vtpm::cmd::tpm2_pcr_extend::pcr_extend;
+//use crate::vtpm::cmd::tpm2_startup::startup;
+//use crate::vtpm::cmd::TPM_SU_CLEAR;
 use alloc::string::String;
 use alloc::{vec, vec::Vec};
 use core::mem::size_of;
@@ -30,7 +30,7 @@ use super::error::TdxError;
 use super::service::{TdVmcallServiceCommandHeader, TdVmcallServiceResponseHeader};
 use super::tdcall::tdcall_extend_rtmr;
 use super::tdvf::get_tdvf_firmware_volumes;
-use super::vtpm_cert::generate_vtpm_certificates;
+//use super::vtpm_cert::generate_vtpm_certificates;
 
 const PLATFORM_BLOB_DESC: &[u8] = b"TDVF";
 const RTM_MEASUREMENT_STATE_SIZE: usize = 1024;
@@ -211,7 +211,7 @@ impl RtmMeasurementState {
 pub fn extend_svsm_version() -> Result<(), TdxError> {
     let version = String::from(env!("CARGO_PKG_VERSION")) + "\0";
     let digests = create_digests(version.as_bytes())?;
-    pcr_extend(0, &digests).map_err(|_| TdxError::Measurement)?;
+    //pcr_extend(0, &digests).map_err(|_| TdxError::Measurement)?;
 
     let mut vrtm = VRTM_MEASUREMENT.lock();
     vrtm.write_event(0, EV_S_CRTM_VERSION, &digests, version.as_bytes())
@@ -230,7 +230,7 @@ fn extend_tdvf_firmware_volumes() -> Result<(), TdxError> {
         let mem: &[u8] = unsafe { core::slice::from_raw_parts(vstart, PAGE_SIZE) };
 
         let digests = create_digests(mem)?;
-        pcr_extend(0, &digests).map_err(|_| TdxError::Measurement)?;
+        //pcr_extend(0, &digests).map_err(|_| TdxError::Measurement)?;
 
         // Put the firmware volume information into the event
         let fw_blob =
@@ -295,7 +295,7 @@ pub fn extend_separator() -> Result<Vec<u8>, TdxError> {
 
 pub fn tdx_tpm_measurement_init() -> Result<(), TdxError> {
     // Send the start up command and initialize the TPM
-    startup(TPM_SU_CLEAR).map_err(|_| TdxError::Measurement)?;
+   // startup(TPM_SU_CLEAR).map_err(|_| TdxError::Measurement)?;
 
     // Test createek flow in L1
     #[cfg(feature = "test_vtpm")]
@@ -305,10 +305,10 @@ pub fn tdx_tpm_measurement_init() -> Result<(), TdxError> {
     }
 
     // Extend separator into TDX RTMRs
-    let event_log = extend_separator()?;
+   // let event_log = extend_separator()?;
 
-    // Provision the CA and EK certificate
-    generate_vtpm_certificates(&event_log)?;
+   // // Provision the CA and EK certificate
+   // generate_vtpm_certificates(&event_log)?;
 
     // Then extend the SVSM version into PCR[0]
     extend_svsm_version()?;
